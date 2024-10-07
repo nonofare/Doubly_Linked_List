@@ -7,12 +7,10 @@ namespace DLL {
 		class Node {
 			friend List;
 
-		private:
 			T data;
 			Node<T>* next;
 			Node<T>* prev;
 
-		public:
 			Node(T data) {
 				this->data = data;
 				next = nullptr;
@@ -20,7 +18,6 @@ namespace DLL {
 			}
 		};
 
-	private:
 		size_t size;
 		Node<T>* head;
 		Node<T>* tail;
@@ -32,9 +29,10 @@ namespace DLL {
 			tail = nullptr;
 		}
 
-		// Dodawanie nowego elementu na poczatku listy (2b)
+		// Add new element at the begining of the list, time complexity: theta = 1 (2b)
 		void add_at_head(T data) {
 			Node<T>* newNode = new Node<T>(data);
+
 			if (size > 0) {
 				head->prev = newNode;
 				newNode->next = head;
@@ -44,12 +42,14 @@ namespace DLL {
 				head = newNode;
 				tail = newNode;
 			}
+
 			size++;
 		}
 
-		// Dodawanie nowego elementu na koncu listy (2a)
+		// Add new element at the end of the list, time complexity: theta = 1 (2a)
 		void add_at_tail(T data) {
 			Node<T>* newNode = new Node<T>(data);
+
 			if (size > 0) {
 				tail->next = newNode;
 				newNode->prev = tail;
@@ -59,66 +59,96 @@ namespace DLL {
 				head = newNode;
 				tail = newNode;
 			}
+
 			size++;
 		}
 
-		// Usiniecie pierwszego elementu (2d)
-		bool remove_at_head() {
+		// Remove first element, time complexity: theta = 1 (2d)
+		void remove_at_head() {
 			if (size > 1) {
 				Node<T>* temp = head->next;
+
 				delete head;
 				head = temp;
 				size--;
-
-				return true;
 			}
 			else if (size == 1) {
 				delete head;
 				head = tail = nullptr;
 				size--;
-
-				return true;
 			}
 			else {
-				return false;
+				throw std::underflow_error("List is empty");
 			}
 		}
 
-		// Usiniecie ostatniego elementu (2c)
-		bool remove_at_tail() {
+		// Remove last element, time complexity: theta = 1 (2c)
+		void remove_at_tail() {
 			if (size > 1) {
 				Node<T>* temp = tail->prev;
+
 				delete tail;
 				tail = temp;
 				size--;
-
-				return true;
 			}
 			else if (size == 1) {
 				delete tail;
 				head = tail = nullptr;
 				size--;
-
-				return true;
 			}
 			else {
-				return false;
+				throw std::underflow_error("List is empty");
 			}
 		}
 
-		// Zwrocenie danych i-tego elementu listy (2e)
-		bool get_data_by_index(size_t index) {
-			if (size < index + 1 || index < 0) {
-				return false;
+		// Get node data by index, time complexity: O = n/2 (2e)
+		T get_data_by_index(size_t index) {
+			if (index > size - 1) {
+				throw std::out_of_range("Index is out of range");
 			}
 			else {
-				
-			}
+				Node<T>* temp;
+
+				if (index < size / 2) {
+					temp = head;
+					for (size_t i = 0; i < index; i++) {
+						temp = temp->next;
+					}
+				}
+				else {
+					temp = tail;
+					for (size_t i = size - 1; i > index; i--) {
+						temp = temp->prev;
+					}
+				}
+
+				return temp->data;
+			}	
 		}
 
-		// Ustawienie danych i-tego elementu listy(2f)
-		void set_data_by_index(T data) {
+		// Set node data by index, time complexity: O = n/2 (2f)
+		void set_data_by_index(size_t index, T data) {
+			if (index > size - 1) {
+				throw std::out_of_range("Index is out of range");
+			}
+			else {
+				Node<T>* temp;
 
+				if (index < size / 2) {
+					temp = head;
+					for (size_t i = 0; i < index; i++) {
+						temp = temp->next;
+					}
+				}
+				else {
+					temp = tail;
+					for (size_t i = size - 1; i > index; i--) {
+						temp = temp->prev;
+					}
+				}
+
+				temp->data = data;
+			}
 		}
 
 		// Wyszukiwanie elementu (2g)
@@ -136,9 +166,18 @@ namespace DLL {
 
 		}
 
-		// Usuniecie wszystkich elementow listy (2j)
+		// Delete all list elements, time complexity: theta = n (2j)
 		void erase() {
+			if (size > 0) {
+				Node<T>* temp = tail;
 
+				while (temp != nullptr) {
+					Node<T>* temp2 = temp->prev;
+					delete temp;
+					temp = temp2;
+					size--;
+				}
+			}
 		}
 
 		// Zwrocenie napisowej reprezentacji listy (2k) (XD?)
