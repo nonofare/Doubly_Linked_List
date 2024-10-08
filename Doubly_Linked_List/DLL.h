@@ -35,7 +35,7 @@ namespace DLL {
 			erase();
 		}
 
-		// Method purpose: Return list size
+		// Method purpose: To get list element count
 		// Arguments: None
 		// Returns: List size
 		// Time complexity: Theta = 1
@@ -44,17 +44,17 @@ namespace DLL {
 			return size;
 		}
 
-		// Method purpose: Check if list is empty
+		// Method purpose: To check if list is has no elements
 		// Arguments: None
-		// Returns: True when list has no nodes
+		// Returns: True when list has no elements
 		// Time complexity: Theta = 1
 		// Comment:
 		bool is_empty() {
 			return size == 0;
 		}
 
-		// Method purpose: Add a new element
-		// Arguments: Data (T) of a new node
+		// Method purpose: To add a new element
+		// Arguments: Data(T) of a new element
 		// Returns: None
 		// Time complexity: Theta = 1
 		// Comment:
@@ -62,9 +62,8 @@ namespace DLL {
 			push_back(data);
 		}
 
-		// (2b)
-		// Method purpose: Add a new element at the begining of the list
-		// Arguments: Data (T) of a new node
+		// Method purpose: To add a new element at the front of the list
+		// Arguments: Data(T) of a new element
 		// Returns: None
 		// Time complexity: Theta = 1
 		// Comment:
@@ -84,9 +83,8 @@ namespace DLL {
 			size++;
 		}
 
-		// (2a)
-		// Method purpose: Add new element at the end of the list
-		// Arguments: Data (T) of a new node
+		// Method purpose: To add new element at the back of the list
+		// Arguments: Data(T) of a new element
 		// Returns: None
 		// Time complexity: Theta = 1
 		// Comment:
@@ -106,15 +104,14 @@ namespace DLL {
 			size++;
 		}
 
-		// (2d)
-		// Method purpose: Remove first element from the list
+		// Method purpose: To remove oldest list element
 		// Arguments: None
-		// Returns: None
+		// Returns: True when element was found and deleted
 		// Time complexity: Theta = 1
 		// Comment:
-		void pop_front() {
+		bool pop_front() {
 			if (size == 0) {
-				throw std::runtime_error("List is empty");
+				return false;
 			}
 			else if (size > 1) {
 				Node<T>* temp = head->next;
@@ -128,19 +125,20 @@ namespace DLL {
 				head = tail = nullptr;
 				size--;
 			}
+
+			return true;
 		}
 
-		// (2c)
-		// Method purpose: Remove last element from the list
+		// Method purpose: To remove youngest list element
 		// Arguments: None
-		// Returns: None
+		// Returns: True when element was found and deleted
 		// Time complexity: Theta = 1
 		// Comment:
-		void pop_back() {
+		bool pop_back() {
 			if (size == 0) {
-				throw std::runtime_error("List is empty");
+				return false;
 			}
-			 else if (size > 1) {
+			else if (size > 1) {
 				Node<T>* temp = tail->prev;
 				delete tail;
 				tail = temp;
@@ -152,12 +150,13 @@ namespace DLL {
 				head = tail = nullptr;
 				size--;
 			}
+
+			return true;
 		}
 
-		// (2e)
-		// Method purpose: Get a node data by its index
-		// Arguments: Wanted node index counted from the begining
-		// Returns: Wanted node data (T)
+		// Method purpose:
+		// Arguments:
+		// Returns:
 		// Time complexity: O = n/2
 		// Comment:
 		const T& operator[](size_t index) const {
@@ -184,10 +183,9 @@ namespace DLL {
 			}
 		}
 
-		// (2f)
-		// Method purpose: Set a node data by its index
-		// Arguments: Wanted node index counted from the begining
-		// Returns: None
+		// Method purpose:
+		// Arguments:
+		// Returns:
 		// Time complexity: O = n/2
 		// Comment:
 		T& operator[](size_t index) {
@@ -214,17 +212,16 @@ namespace DLL {
 			}
 		}
 
-		// (2g)
-		// Method purpose: Find a node by its data
-		// Arguments: Wanted node data
-		// Returns: Pointer to a wanted node
+		// Method purpose:
+		// Arguments:
+		// Returns:
 		// Time complexity: O = n
 		// Comment:
-		Node<T>* find(T data) {
+		Node<T>* find(T data, int(*cmp)(T, T)) {
 			Node<T>* current = head;
 
 			while (current != nullptr) {
-				if (current->data == data) {
+				if (cmp(current->data, data) == 0) {
 					return current;
 				}
 				current = current->next;
@@ -233,17 +230,16 @@ namespace DLL {
 			return nullptr;
 		}
 
-		// (2h)
-		// Method purpose: Find a node by its data and delete it
-		// Arguments: Wanted node data
-		// Returns: None
+		// Method purpose:
+		// Arguments:
+		// Returns:
 		// Time complexity: O = n
 		// Comment:
-		void remove(T data) {
+		bool remove(T data, int(*cmp)(T, T)) {
 			Node<T>* current = head;
 
 			while (current != nullptr) {
-				if (current->data == data) {
+				if (cmp(current->data, data) == 0) {
 					if (current == head) {
 						pop_front();
 					}
@@ -261,16 +257,15 @@ namespace DLL {
 						size--;
 					}
 
-					return;
+					return true;
 				}
 
 				current = current->next;
 			}
 
-			throw std::runtime_error("Node not found");
+			return false;
 		}
 
-		// (2i)
 		// Method purpose:
 		// Arguments:
 		// Returns:
@@ -280,8 +275,7 @@ namespace DLL {
 
 		}
 
-		// (2j)
-		// Method purpose: Delete all list elements
+		// Method purpose: To delete all list elements
 		// Arguments: None
 		// Returns: None
 		// Time complexity: Theta = n
@@ -299,10 +293,9 @@ namespace DLL {
 			size = 0;
 		}
 
-		// (2k)
-		// Method purpose: Return string representation of n nodes (or every node when no arguments)
-		// Arguments: Quantity of nodes
-		// Returns: String representation of n nodes
+		// Method purpose:
+		// Arguments:
+		// Returns:
 		// Time complexity: Theta = n
 		// Comment:
 		std::string to_string(size_t quantity = size) {
