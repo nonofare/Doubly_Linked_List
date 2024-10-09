@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <string>
 #include <cmath>
 #include <time.h>
 #include "DLL.h"
@@ -11,12 +12,13 @@ struct some_object {
 	char field_2;
 };
 
-int some_objects_cmp(some_object* so1, some_object* so2) {
-	int diff = so1->field_1 - so2->field_1;
-	if (diff != 0) {
-		return diff;
-	}
-	return so1->field_2 - so2->field_2;
+std::string some_objects_to_str(some_object* so) {
+	std::string text = "(" + std::to_string(so->field_1) + ", " + so->field_2 + ") ";
+	return text;
+}
+
+bool some_objects_cmp(some_object* so1, some_object* so2) {
+	return so1->field_1 == so2->field_1;
 }
 
 int main()
@@ -32,12 +34,11 @@ int main()
 			some_object* so = new some_object();
 			so->field_1 = rand() % 100;
 			so->field_2 = 'A' + rand() % 26;
-			
+
 			ll->push(so);
 		}
 		clock_t t2 = clock();
-		//cout << ll->to_string() << t1 << t2 << endl;
-		cout << "t1: " << t1 << " t2: " << t2 << endl;
+		cout << ll->to_str(some_objects_to_str) << "t1: " << t1 << " t2: " << t2 << endl;
 
 		const int m = pow(10, 4);
 		t1 = clock();
@@ -50,8 +51,7 @@ int main()
 			delete so;
 		}
 		t2 = clock();
-		//cout << ll->to_string() << t1 << t2 << endl;
-		cout << "t1: " << t1 << " t2: " << t2 << endl;
+		cout << ll->to_str(some_objects_to_str) << "t1: " << t1 << " t2: " << t2 << endl;
 		ll->erase();
 	}
 	delete ll;

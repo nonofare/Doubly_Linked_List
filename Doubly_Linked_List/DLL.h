@@ -217,11 +217,11 @@ namespace DLL {
 		// Returns:
 		// Time complexity: O = n
 		// Comment:
-		Node<T>* find(T data, int(*cmp)(T, T)) {
+		Node<T>* find(T pattern, bool(*cmp)(T, T)) {
 			Node<T>* current = head;
 
 			while (current != nullptr) {
-				if (cmp(current->data, data) == 0) {
+				if (cmp(current->pattern, pattern)) {
 					return current;
 				}
 				current = current->next;
@@ -235,11 +235,11 @@ namespace DLL {
 		// Returns:
 		// Time complexity: O = n
 		// Comment:
-		bool remove(T data, int(*cmp)(T, T)) {
+		bool remove(T pattern, bool(*cmp)(T, T)) {
 			Node<T>* current = head;
 
 			while (current != nullptr) {
-				if (cmp(current->data, data) == 0) {
+				if (cmp(current->data, pattern)) {
 					if (current == head) {
 						pop_front();
 					}
@@ -285,6 +285,7 @@ namespace DLL {
 
 			while (tail != nullptr) {
 				temp = tail->prev;
+				delete tail->data;
 				delete tail;
 				tail = temp;
 			}
@@ -298,22 +299,27 @@ namespace DLL {
 		// Returns:
 		// Time complexity: Theta = n
 		// Comment:
-		std::string to_string(size_t quantity = size) {
-			if (quantity > size) {
-				throw std::out_of_range("Index is out of range");
+		std::string to_str(std::string(*out_to_string)(T) = nullptr) {
+			Node<T>* temp = head;
+			std::string text;
+
+			text = "List has: " + std::to_string(int(size)) + " elements ";
+			if (out_to_string != nullptr) {
+				for (size_t i = 0; i < size; i++) {
+					text += out_to_string(temp->data);
+					text += " ";
+					temp = temp->next;
+				}
 			}
 			else {
-				Node<T>* current = head;
-				std::string text;
-
-				for (size_t i = 0; i < quantity; i++) {
-					text += std::to_string(current->data);
+				for (size_t i = 0; i < size; i++) {
+					//text += std::to_string(temp->data);
 					text += " ";
-					current = current->next;
+					temp = temp->next;
 				}
-
-				return text;
 			}
+
+			return text;
 		}
 	};
 }
