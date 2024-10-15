@@ -18,6 +18,12 @@ namespace DLL {
 				next = nullptr;
 				prev = nullptr;
 			}
+
+			~Node() {
+				if constexpr (std::is_pointer_v<T>) {
+					delete data;
+				}
+			}
 		};
 
 		size_t size;
@@ -35,80 +41,74 @@ namespace DLL {
 			erase();
 		}
 
-		// Method purpose: To get list element count
+		// Method purpose: Get the list element count
 		// Arguments: None
 		// Returns: List size
-		// Time complexity: Theta = 1
-		// Comment:
-		size_t get_size() {
+		// Time complexity: Theta(1)
+		size_t get_size() const {
 			return size;
 		}
 
-		// Method purpose: To check if list is has no elements
+		// Method purpose: Check if list has elements
 		// Arguments: None
-		// Returns: True when list has no elements
-		// Time complexity: Theta = 1
-		// Comment:
-		bool is_empty() {
+		// Returns: True when list has no elements, false otherwise
+		// Time complexity: Theta(1)
+		bool is_empty() const {
 			return size == 0;
 		}
 
-		// Method purpose: To add a new element
+		// Method purpose: Add a new element to the list
 		// Arguments: Data(T) of a new element
 		// Returns: None
-		// Time complexity: Theta = 1
-		// Comment:
+		// Time complexity: Theta(1)
 		void push(T data) {
 			push_back(data);
 		}
 
-		// Method purpose: To add a new element at the front of the list
+		// Method purpose: Add a new element at front of the list
 		// Arguments: Data(T) of a new element
 		// Returns: None
-		// Time complexity: Theta = 1
-		// Comment:
+		// Time complexity: Theta(1)
 		void push_front(T data) {
 			Node<T>* newNode = new Node<T>(data);
 
-			if (size > 0) {
+			if (size == 0) {
+				head = newNode;
+				tail = newNode;
+			}
+			else {
 				head->prev = newNode;
 				newNode->next = head;
 				head = newNode;
 			}
-			else {
-				head = newNode;
-				tail = newNode;
-			}
 
 			size++;
 		}
 
-		// Method purpose: To add new element at the back of the list
+		// Method purpose: Add a new element at back of the list
 		// Arguments: Data(T) of a new element
 		// Returns: None
-		// Time complexity: Theta = 1
-		// Comment:
+		// Time complexity: Theta(1)
 		void push_back(T data) {
 			Node<T>* newNode = new Node<T>(data);
 
-			if (size > 0) {
+			if (size == 0) {
+				head = newNode;
+				tail = newNode;
+			}
+			else {
 				tail->next = newNode;
 				newNode->prev = tail;
 				tail = newNode;
 			}
-			else {
-				head = newNode;
-				tail = newNode;
-			}
 
 			size++;
 		}
 
-		// Method purpose: To remove oldest list element
+		// Method purpose: Remove oldest list element
 		// Arguments: None
-		// Returns: True when element was found and deleted
-		// Time complexity: Theta = 1
-		// Comment:
+		// Returns: True when element was found and deleted, false otherwise
+		// Time complexity: Theta(1)
 		bool pop_front() {
 			if (size == 0) {
 				return false;
@@ -129,11 +129,10 @@ namespace DLL {
 			return true;
 		}
 
-		// Method purpose: To remove youngest list element
+		// Method purpose: Remove youngest list element
 		// Arguments: None
-		// Returns: True when element was found and deleted
-		// Time complexity: Theta = 1
-		// Comment:
+		// Returns: True when element was found and deleted, false otherwise
+		// Time complexity: Theta(1)
 		bool pop_back() {
 			if (size == 0) {
 				return false;
@@ -154,11 +153,10 @@ namespace DLL {
 			return true;
 		}
 
-		// Method purpose:
-		// Arguments:
-		// Returns:
-		// Time complexity: O = n/2
-		// Comment:
+		// Method purpose: Access to an element by index (read-only)
+		// Arguments: Index of a wanted element
+		// Returns: Const reference to the element
+		// Time complexity: O(n/2)
 		const T& operator[](size_t index) const {
 			if (index > size - 1) {
 				throw std::out_of_range("Index is out of range");
@@ -183,11 +181,10 @@ namespace DLL {
 			}
 		}
 
-		// Method purpose:
-		// Arguments:
-		// Returns:
-		// Time complexity: O = n/2
-		// Comment:
+		// Method purpose: Access to an element by index
+		// Arguments: Index of a wanted element
+		// Returns: Reference to the element
+		// Time complexity: O(n/2)
 		T& operator[](size_t index) {
 			if (index > size - 1) {
 				throw std::out_of_range("Index is out of range");
@@ -212,16 +209,15 @@ namespace DLL {
 			}
 		}
 
-		// Method purpose:
-		// Arguments:
-		// Returns:
-		// Time complexity: O = n
-		// Comment:
+		// Method purpose: Find specific element
+		// Arguments: Wanted data(T) and pointer to a comparator function
+		// Returns: Pointer to a found element or nullptr when element was not found
+		// Time complexity: O(n)
 		Node<T>* find(T pattern, bool(*cmp)(T, T)) {
 			Node<T>* current = head;
 
 			while (current != nullptr) {
-				if (cmp(current->pattern, pattern)) {
+				if (cmp(current->data, pattern)) {
 					return current;
 				}
 				current = current->next;
@@ -230,11 +226,10 @@ namespace DLL {
 			return nullptr;
 		}
 
-		// Method purpose:
-		// Arguments:
-		// Returns:
-		// Time complexity: O = n
-		// Comment:
+		// Method purpose: Remove specific element
+		// Arguments: Wanted data(T) and pointer to a comparator function
+		// Returns: True if element was found and deleted, false otherwise
+		// Time complexity: O(n)
 		bool remove(T pattern, bool(*cmp)(T, T)) {
 			Node<T>* current = head;
 
@@ -266,26 +261,57 @@ namespace DLL {
 			return false;
 		}
 
-		// Method purpose:
-		// Arguments:
-		// Returns:
-		// Time complexity:
-		// Comment:
-		void order_push() {
+		// Method purpose: Insert an element in an ordered position within the list
+		// Arguments: Data (T) of the new element, pointer to a comparator function
+		// Returns: None
+		// Time complexity: O(n)
+		void order_push(T data, bool(*cmp)(T, T)) {
+			Node<T>* newNode = new Node<T>(data);
 
+			if (size == 0) {
+				head = newNode;
+				tail = newNode;
+			}
+			else {
+				Node<T>* current = head;
+				Node<T>* temp = head;
+
+				while (current != nullptr) {
+					if (cmp(newNode->data, current->data) && cmp(current->data, temp->data)) {
+						temp = current;
+					}
+
+					current = current->next;
+				}
+				if (temp == head) {
+					push_front(data);
+					delete newNode;
+				}
+				else if (temp == tail) {
+					push_back(data);
+					delete newNode;
+				}
+				else {
+					newNode->next = temp->next;
+					(temp->next)->prev = newNode;
+
+					newNode->prev = temp;
+					temp->next = newNode;
+				}
+			}
+
+			size++;
 		}
 
-		// Method purpose: To delete all list elements
+		// Method purpose: Delete all list elements
 		// Arguments: None
 		// Returns: None
-		// Time complexity: Theta = n
-		// Comment:
+		// Time complexity: Theta(n)
 		void erase() {
 			Node<T>* temp;
 
 			while (tail != nullptr) {
 				temp = tail->prev;
-				delete tail->data;
 				delete tail;
 				tail = temp;
 			}
@@ -294,29 +320,37 @@ namespace DLL {
 			size = 0;
 		}
 
-		// Method purpose:
-		// Arguments:
-		// Returns:
-		// Time complexity: Theta = n
-		// Comment:
-		std::string to_str(std::string(*out_to_string)(T) = nullptr) {
+		// Method purpose: String representation of a whole list
+		// Arguments: specific to_string function if needed, how many elements to show
+		// Returns: String representation of the list
+		// Time complexity: Theta(n)
+		std::string to_str(std::string(*out_to_string)(T) = nullptr, size_t element_count = 0) {
 			Node<T>* temp = head;
 			std::string text;
 
-			text = "List has: " + std::to_string(int(size)) + " elements ";
+			if (element_count <= 0 || element_count > size) {
+				element_count = size;
+			}
+
+			text = "List has " + std::to_string(int(size)) + " elements:\n";
 			if (out_to_string != nullptr) {
-				for (size_t i = 0; i < size; i++) {
+				for (size_t i = 0; i < element_count; i++) {
 					text += out_to_string(temp->data);
-					text += " ";
+					temp = temp->next;
+				}
+			}
+			else if constexpr (std::is_arithmetic_v<T>) {
+				for (size_t i = 0; i < element_count; i++) {
+					text += std::to_string(temp->data);
 					temp = temp->next;
 				}
 			}
 			else {
-				for (size_t i = 0; i < size; i++) {
-					//text += std::to_string(temp->data);
-					text += " ";
-					temp = temp->next;
-				}
+				text = "Data type is not supported and no method was provided";
+			}
+
+			if (element_count < size) {
+				text += "[...]\n";
 			}
 
 			return text;
