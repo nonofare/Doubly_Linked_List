@@ -320,8 +320,8 @@ namespace DLL {
 			size = 0;
 		}
 
-		// Method purpose: String representation of a whole list
-		// Arguments: specific to_string function if needed, how many elements to show
+		// Method purpose: Get string representation of the list
+		// Arguments: Specific to_string function if needed, how many elements to show
 		// Returns: String representation of the list
 		// Time complexity: Theta(n)
 		std::string to_str(std::string(*out_to_string)(T) = nullptr, size_t element_count = 0) {
