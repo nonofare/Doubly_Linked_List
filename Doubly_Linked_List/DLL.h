@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 
 namespace DLL {
@@ -5,16 +6,13 @@ namespace DLL {
 	template <typename T>
 	class DoubLinList {
 
-		template <typename T>
-		class Node {
-			friend DoubLinList;
-
+		struct Node {
 			T data;
-			Node<T>* next;
-			Node<T>* prev;
+			Node* next;
+			Node* prev;
 
-			Node(T data) {
-				this->data = data;
+			Node(T in_data) {
+				data = in_data;
 				next = nullptr;
 				prev = nullptr;
 			}
@@ -27,8 +25,8 @@ namespace DLL {
 		};
 
 		size_t size;
-		Node<T>* head;
-		Node<T>* tail;
+		Node* head;
+		Node* tail;
 
 	public:
 		DoubLinList() {
@@ -38,279 +36,182 @@ namespace DLL {
 		}
 
 		~DoubLinList() {
-			erase();
+			Erase();
 		}
 
-		// Method purpose: Get the list element count
-		// Arguments: None
-		// Returns: List size
-		// Time complexity: Theta(1)
-		size_t get_size() const {
+		size_t Size() const {
 			return size;
 		}
 
-		// Method purpose: Check if list has elements
-		// Arguments: None
-		// Returns: True when list has no elements, false otherwise
-		// Time complexity: Theta(1)
-		bool is_empty() const {
+		bool IsEmpty() const {
 			return size == 0;
 		}
 
-		// Method purpose: Add a new element to the list
-		// Arguments: Data(T) of a new element
-		// Returns: None
-		// Time complexity: Theta(1)
-		void push(T data) {
-			push_back(data);
+		void Push(T data) {
+			PushBack(data);
 		}
 
-		// Method purpose: Add a new element at front of the list
-		// Arguments: Data(T) of a new element
-		// Returns: None
-		// Time complexity: Theta(1)
-		void push_front(T data) {
-			Node<T>* newNode = new Node<T>(data);
+		void PushFront(T data) {
+			Node* node = new Node(data);
 
 			if (size == 0) {
-				head = newNode;
-				tail = newNode;
+				head = node;
+				tail = node;
 			}
 			else {
-				head->prev = newNode;
-				newNode->next = head;
-				head = newNode;
+				head->prev = node;
+				node->next = head;
+				head = node;
 			}
 
 			size++;
 		}
 
-		// Method purpose: Add a new element at back of the list
-		// Arguments: Data(T) of a new element
-		// Returns: None
-		// Time complexity: Theta(1)
-		void push_back(T data) {
-			Node<T>* newNode = new Node<T>(data);
+		void PushBack(T data) {
+			Node* node = new Node(data);
 
 			if (size == 0) {
-				head = newNode;
-				tail = newNode;
+				head = node;
+				tail = node;
 			}
 			else {
-				tail->next = newNode;
-				newNode->prev = tail;
-				tail = newNode;
+				tail->next = node;
+				node->prev = tail;
+				tail = node;
 			}
 
 			size++;
 		}
 
-		// Method purpose: Remove oldest list element
-		// Arguments: None
-		// Returns: True when element was found and deleted, false otherwise
-		// Time complexity: Theta(1)
-		bool pop_front() {
-			if (size == 0) {
-				return false;
-			}
-			else if (size > 1) {
-				Node<T>* temp = head->next;
-				delete head;
-				head = temp;
-				head->prev = nullptr;
-				size--;
-			}
-			else {
-				delete head;
-				head = tail = nullptr;
-				size--;
-			}
-
-			return true;
-		}
-
-		// Method purpose: Remove youngest list element
-		// Arguments: None
-		// Returns: True when element was found and deleted, false otherwise
-		// Time complexity: Theta(1)
-		bool pop_back() {
-			if (size == 0) {
-				return false;
-			}
-			else if (size > 1) {
-				Node<T>* temp = tail->prev;
-				delete tail;
-				tail = temp;
-				tail->next = nullptr;
-				size--;
-			}
-			else {
-				delete tail;
-				head = tail = nullptr;
-				size--;
-			}
-
-			return true;
-		}
-
-		// Method purpose: Access to an element by index (read-only)
-		// Arguments: Index of a wanted element
-		// Returns: Const reference to the element
-		// Time complexity: O(n/2)
-		const T& operator[](size_t index) const {
-			if (index > size - 1) {
-				throw std::out_of_range("Index is out of range");
-			}
-			else {
-				Node<T>* temp;
-
-				if (index < size / 2) {
-					temp = head;
-					for (size_t i = 0; i < index; i++) {
-						temp = temp->next;
-					}
-				}
-				else {
-					temp = tail;
-					for (size_t i = size - 1; i > index; i--) {
-						temp = temp->prev;
-					}
-				}
-
-				return temp->data;
-			}
-		}
-
-		// Method purpose: Access to an element by index
-		// Arguments: Index of a wanted element
-		// Returns: Reference to the element
-		// Time complexity: O(n/2)
-		T& operator[](size_t index) {
-			if (index > size - 1) {
-				throw std::out_of_range("Index is out of range");
-			}
-			else {
-				Node<T>* temp;
-
-				if (index < size / 2) {
-					temp = head;
-					for (size_t i = 0; i < index; i++) {
-						temp = temp->next;
-					}
-				}
-				else {
-					temp = tail;
-					for (size_t i = size - 1; i > index; i--) {
-						temp = temp->prev;
-					}
-				}
-
-				return temp->data;
-			}
-		}
-
-		// Method purpose: Find specific element
-		// Arguments: Wanted data(T) and pointer to a comparator function
-		// Returns: Pointer to a found element or nullptr when element was not found
-		// Time complexity: O(n)
-		Node<T>* find(T pattern, bool(*cmp)(T, T)) {
-			Node<T>* current = head;
-
-			while (current != nullptr) {
-				if (cmp(current->data, pattern)) {
-					return current;
-				}
-				current = current->next;
-			}
-
-			return nullptr;
-		}
-
-		// Method purpose: Remove specific element
-		// Arguments: Wanted data(T) and pointer to a comparator function
-		// Returns: True if element was found and deleted, false otherwise
-		// Time complexity: O(n)
-		bool remove(T pattern, bool(*cmp)(T, T)) {
-			Node<T>* current = head;
-
-			while (current != nullptr) {
-				if (cmp(current->data, pattern)) {
-					if (current == head) {
-						pop_front();
-					}
-					else if (current == tail) {
-						pop_back();
-					}
-					else {
-						Node<T>* prev = current->prev;
-						Node<T>* next = current->next;
-
-						prev->next = next;
-						next->prev = prev;
-
-						delete current;
-						size--;
-					}
-
-					return true;
-				}
-
-				current = current->next;
-			}
-
-			return false;
-		}
-
-		// Method purpose: Insert an element in an ordered position within the list
-		// Arguments: Data (T) of the new element, pointer to a comparator function
-		// Returns: None
-		// Time complexity: O(n)
-		void order_push(T data, bool(*cmp)(T, T)) {
-			Node<T>* newNode = new Node<T>(data);
+		bool OrderPush(T data, bool(*cmp)(T, T) = nullptr) {
+			Node* node = new Node(data);
 
 			if (size == 0) {
-				head = newNode;
-				tail = newNode;
+				head = node;
+				tail = node;
 			}
 			else {
-				Node<T>* current = head;
-				Node<T>* temp = head;
+				Node* current = head;
+				Node* temp = head;
 
 				while (current != nullptr) {
-					if (cmp(newNode->data, current->data) && cmp(current->data, temp->data)) {
-						temp = current;
+					if (cmp) {
+						if (cmp(node->data, current->data) && cmp(current->data, temp->data)) {
+							temp = current;
+						}
+					}
+					else if constexpr (std::is_arithmetic_v<T>) {
+						if (node->data == current->data && current->data == temp->data) {
+							temp = current;
+						}
+					}
+					else {
+						return false;
 					}
 
 					current = current->next;
 				}
 				if (temp == head) {
-					push_front(data);
-					delete newNode;
+					PushFront(data);
+					delete node;
 				}
 				else if (temp == tail) {
-					push_back(data);
-					delete newNode;
+					PushBack(data);
+					delete node;
 				}
 				else {
-					newNode->next = temp->next;
-					(temp->next)->prev = newNode;
+					node->next = temp->next;
+					temp->next->prev = node;
 
-					newNode->prev = temp;
-					temp->next = newNode;
+					node->prev = temp;
+					temp->next = node;
 				}
 			}
 
 			size++;
+			return true;
 		}
 
-		// Method purpose: Delete all list elements
-		// Arguments: None
-		// Returns: None
-		// Time complexity: Theta(n)
-		void erase() {
-			Node<T>* temp;
+		bool Pop() {
+			return PopFront();
+		}
 
-			while (tail != nullptr) {
+		bool PopFront() {
+			if (size == 0) {
+				return false;
+			}
+			else if (size > 1) {
+				Node* temp = head->next;
+
+				delete head;
+				head = temp;
+				head->prev = nullptr;
+
+				size--;
+			}
+			else {
+				delete head;
+				head = tail = nullptr;
+
+				size--;
+			}
+
+			return true;
+		}
+
+		bool PopBack() {
+			if (size == 0) {
+				return false;
+			}
+			else if (size > 1) {
+				Node* temp = tail->prev;
+
+				delete tail;
+				tail = temp;
+				tail->next = nullptr;
+
+				size--;
+			}
+			else {
+				delete tail;
+				head = tail = nullptr;
+
+				size--;
+			}
+
+			return true;
+		}
+
+		bool Remove(T data, bool(*cmp)(T, T) = nullptr) {
+			Node* temp = Find(data, cmp);
+			if (temp) {
+				if (temp == head) {
+					PopFront();
+				}
+				else if (temp == tail) {
+					PopBack();
+				}
+				else {
+					Node* prev = temp->prev;
+					Node* next = temp->next;
+
+					prev->next = next;
+					next->prev = prev;
+
+					delete temp;
+					size--;
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+		void Erase() {
+			Node* temp;
+
+			while (tail) {
 				temp = tail->prev;
 				delete tail;
 				tail = temp;
@@ -320,38 +221,111 @@ namespace DLL {
 			size = 0;
 		}
 
-		// Method purpose: Get string representation of the list
-		// Arguments: Specific to_string function if needed, how many elements to show
-		// Returns: String representation of the list
-		// Time complexity: Theta(n)
-		std::string to_str(std::string(*out_to_string)(T) = nullptr, size_t element_count = 0) {
-			Node<T>* temp = head;
-			std::string text;
+		Node* Find(T data, bool(*cmp)(T, T) = nullptr) const {
+			Node* current = head;
 
-			if (element_count <= 0 || element_count > size) {
-				element_count = size;
+			while (current != nullptr) {
+				if (cmp) {
+					if (cmp(current->data, data)) {
+						return current;
+					}
+				}
+				else if constexpr (std::is_arithmetic_v<T>) {
+					if (current->data == data) {
+						return current;
+					}
+				}
+				else {
+					return nullptr;
+				}
+
+				current = current->next;
 			}
 
-			text = "List has " + std::to_string(int(size)) + " elements:\n";
-			if (out_to_string != nullptr) {
-				for (size_t i = 0; i < element_count; i++) {
-					text += out_to_string(temp->data);
+			return nullptr;
+		}
+
+		const T& operator[](size_t index) const {
+			if (index < 0 || index >= size) {
+				throw std::out_of_range("Index is out of range");
+			}
+			else {
+				Node* temp;
+
+				if (index < size / 2) {
+					temp = head;
+					for (size_t i = 0; i < index; i++) {
+						temp = temp->next;
+					}
+				}
+				else {
+					temp = tail;
+					for (size_t i = size - 1; i > index; i--) {
+						temp = temp->prev;
+					}
+				}
+
+				return temp->data;
+			}
+		}
+
+		T& operator[](size_t index) {
+			if (index < 0 || index >= size) {
+				throw std::out_of_range("Index is out of range");
+			}
+			else {
+				Node* temp;
+
+				if (index < size / 2) {
+					temp = head;
+					for (size_t i = 0; i < index; i++) {
+						temp = temp->next;
+					}
+				}
+				else {
+					temp = tail;
+					for (size_t i = size - 1; i > index; i--) {
+						temp = temp->prev;
+					}
+				}
+
+				return temp->data;
+			}
+		}	
+
+		std::string ToString(unsigned int limit = 0, std::string(*str)(T) = nullptr) const {
+			if (limit <= 0 || limit > size) {
+				limit = size;
+			}
+
+			std::string text = "Doubly Linked List:\n";
+			text += "Size: " + std::to_string(int(size)) + "\n";
+			text += "{\n";
+
+			Node* temp = head;
+			if (str) {
+				for (size_t i = 0; i < limit; i++) {
+					text += str(temp->data);
+					text += "\n";
 					temp = temp->next;
 				}
 			}
 			else if constexpr (std::is_arithmetic_v<T>) {
-				for (size_t i = 0; i < element_count; i++) {
+				for (size_t i = 0; i < limit; i++) {
 					text += std::to_string(temp->data);
+					text += "\n";
 					temp = temp->next;
 				}
 			}
 			else {
-				text = "Data type is not supported and no method was provided";
+				text = "Data type is not supported and no method was provided\n";
 			}
 
-			if (element_count < size) {
+			if (limit < size) {
 				text += "[...]\n";
 			}
+
+			text += "}\n";
 
 			return text;
 		}
