@@ -1,11 +1,7 @@
 #include <iostream>
-#include <cstdlib>
-#include <string>
-#include <cmath>
-#include <time.h>
+#include <random>
+#include <chrono>
 #include "DLL.h"
-using namespace std;
-using namespace DLL;
 
 struct some_object {
 	int field_1;
@@ -13,62 +9,70 @@ struct some_object {
 };
 
 std::string some_objects_str(some_object* so) {
-	std::string text = "(" + std::to_string(so->field_1) + ", " + so->field_2 + ")\n";
-	return text;
+	return "(" + std::to_string(so->field_1) + ", " + so->field_2 + ")";
 }
 
-bool some_objects_cmp1(some_object* so1, some_object* so2) {
+bool some_objects_cmp(some_object* so1, some_object* so2) {
 	return so1->field_1 == so2->field_1;
-}
-
-bool some_objects_cmp2(some_object* so1, some_object* so2) {
-	return so1->field_1 >= so2->field_1;
 }
 
 int main()
 {
-	double time = 0;
-	const int MAX_PUSH_ORDER = 7;
-	const int MAX_SEARCH_ORDER = 4;
-	DoubLinList <some_object*>* ll = new DoubLinList <some_object*>();
+	const int MAX_ORDER = 6;
+	const int LETTES_SIZE = 26;
+	const char LETTERS[LETTES_SIZE] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 
-	for (int i = 1; i <= MAX_PUSH_ORDER; i++)
+	static std::random_device rd;
+	static std::default_random_engine dre(rd());
+	std::uniform_int_distribution<int> rnd_num(0, MAX_ORDER * 1000);
+	std::uniform_int_distribution<int> rnd_let(0, LETTES_SIZE - 1);
+
+	DLL::DoubLinList<some_object*>* dll = new DLL::DoubLinList<some_object*>();
+
+	for (int i = 1; i <= MAX_ORDER; i++)
 	{
+		std::cout << "--------------------------------" << std::endl;
+		std::cout << "Test: " << i << std::endl << std::endl;
+
 		const int n = pow(10, i);
-		clock_t t1 = clock();
+
+		std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
 		for (int j = 0; j < n; j++) {
 			some_object* so = new some_object();
-			so->field_1 = rand() % 100;
-			so->field_2 = 'A' + rand() % 26;
-
-			ll->push(so);
+			so->field_1 = rnd_num(dre);
+			so->field_2 = LETTERS[rnd_let(dre)];
+			dll->Push(so);
 		}
-		clock_t t2 = clock();
+		std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
 
-		time += (double(t2 - t1) / CLOCKS_PER_SEC);
-		cout << i << "# Push done - time passed: " << time << " seconds" << endl << ll->to_str(some_objects_str, 10) << endl;
+		std::chrono::duration<double> pushing_time = end_time - start_time;
+		std::cout << "Pushing time: " << pushing_time.count() << "s" << std::endl;
+		std::cout << dll->ToString(10, some_objects_str) << std::endl;
 
-		const int m = pow(10, MAX_SEARCH_ORDER);
-		t1 = clock();
+		int hits = 0;
+		const int m = pow(10, 4);
+
+		start_time = std::chrono::high_resolution_clock::now();
 		for (int j = 0; j < m; j++) {
 			some_object* so = new some_object();
-			so->field_1 = rand() % 100;
-			so->field_2 = 'A' + rand() % 26;
-
-			ll->remove(so, some_objects_cmp1);
-
+			so->field_1 = rnd_num(dre);
+			so->field_2 = LETTERS[rnd_let(dre)];
+			if (dll->Remove(so, some_objects_cmp)) hits++;
 			delete so;
 		}
-		t2 = clock();
+		end_time = std::chrono::high_resolution_clock::now();
 
-		time += (double(t2 - t1) / CLOCKS_PER_SEC);
-		cout << i << "# Remove done - time passed: " << time << " seconds" << endl << ll->to_str(some_objects_str, 10) << endl;
+		std::chrono::duration<double> removing_time = end_time - start_time;
+		std::cout << "Removing time: " << removing_time.count() << "s" << std::endl;
+		std::cout << "Hits: " << hits << std::endl;
+		std::cout << dll->ToString(10, some_objects_str) << std::endl;
 
-		ll->erase();
+		double total_time = pushing_time.count() + removing_time.count();
+		std::cout << "Total time: " << total_time << "s" << std::endl;
+
+		dll->Erase();
 	}
-	delete ll;
 
-	cout << "Test done - push order: 10^" << MAX_PUSH_ORDER << ", search order: 10^" << MAX_SEARCH_ORDER << ", time passed : " << time << " seconds\n";
-
+	delete dll;
 	return 0;
 }
