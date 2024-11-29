@@ -18,9 +18,7 @@ namespace DLL {
 			}
 
 			~Node() {
-				if constexpr (std::is_pointer_v<T>) {
-					delete data;
-				}
+				
 			}
 		};
 
@@ -43,16 +41,23 @@ namespace DLL {
 			return size;
 		}
 
-		bool IsEmpty() const {
-			return size == 0;
-		}
-
 		void Push(T data) {
-			PushBack(data);
+			try {
+				PushBack(data);
+			}
+			catch (const std::exception& ex) {
+				throw std::runtime_error("DLL::Push() -> " + std::string(ex.what()));
+			}
 		}
 
 		void PushFront(T data) {
-			Node* node = new Node(data);
+			Node* node = nullptr;
+			try {
+				node = new Node(data);
+			}
+			catch (const std::bad_alloc& ex) {
+				throw std::runtime_error("DLL::PushFront() -> " + std::string(ex.what()));
+			}
 
 			if (size == 0) {
 				head = node;
@@ -68,7 +73,13 @@ namespace DLL {
 		}
 
 		void PushBack(T data) {
-			Node* node = new Node(data);
+			Node* node = nullptr;
+			try {
+				node = new Node(data);
+			}
+			catch (const std::bad_alloc& ex) {
+				throw std::runtime_error("DLL::PushBack() -> " + std::string(ex.what()));
+			}
 
 			if (size == 0) {
 				head = node;
@@ -83,8 +94,14 @@ namespace DLL {
 			size++;
 		}
 
-		bool OrderPush(T data, bool(*cmp)(T, T) = nullptr) {
-			Node* node = new Node(data);
+		void OrderPush(T data, bool(*cmp_equal)(T, T) = nullptr) {
+			Node* node = nullptr;
+			try {
+				node = new Node(data);
+			}
+			catch (const std::bad_alloc& ex) {
+				throw std::runtime_error("DLL::OrderPush() -> " + std::string(ex.what()));
+			}
 
 			if (size == 0) {
 				head = node;
@@ -94,9 +111,9 @@ namespace DLL {
 				Node* current = head;
 				Node* temp = head;
 
-				while (current != nullptr) {
-					if (cmp) {
-						if (cmp(node->data, current->data) && cmp(current->data, temp->data)) {
+				while (current) {
+					if (cmp_equal) {
+						if (cmp_equal(node->data, current->data) && cmp_equal(current->data, temp->data)) {
 							temp = current;
 						}
 					}
@@ -106,17 +123,27 @@ namespace DLL {
 						}
 					}
 					else {
-						return false;
+						throw std::runtime_error("T was not arithmetic and no cmp was provided");
 					}
 
 					current = current->next;
 				}
 				if (temp == head) {
-					PushFront(data);
+					try {
+						PushFront(data);
+					}
+					catch (const std::exception& ex) {
+						throw std::runtime_error("DLL::OrderPush() -> " + std::string(ex.what()));
+					}
 					delete node;
 				}
 				else if (temp == tail) {
-					PushBack(data);
+					try {
+						PushBack(data);
+					}
+					catch (const std::exception& ex) {
+						throw std::runtime_error("DLL::OrderPush() -> " + std::string(ex.what()));
+					}
 					delete node;
 				}
 				else {
@@ -129,17 +156,20 @@ namespace DLL {
 			}
 
 			size++;
-			return true;
 		}
 
-		bool Pop() {
-			return PopFront();
-		}
-
-		bool PopFront() {
-			if (size == 0) {
-				return false;
+		void Pop() {
+			try {
+				PopFront();
 			}
+			catch (const std::exception& ex) {
+				throw std::runtime_error("DLL::Pop() -> " + std::string(ex.what()));
+			}
+		}
+
+		void PopFront() {
+			if (!size) { throw std::length_error("DLL::PopFront(): list was empty"); }
+
 			else if (size > 1) {
 				Node* temp = head->next;
 
@@ -155,14 +185,11 @@ namespace DLL {
 
 				size--;
 			}
-
-			return true;
 		}
 
-		bool PopBack() {
-			if (size == 0) {
-				return false;
-			}
+		void PopBack() {
+			if (!size) { throw std::length_error("DLL::PopBack(): list was empty"); }
+
 			else if (size > 1) {
 				Node* temp = tail->prev;
 
@@ -178,18 +205,27 @@ namespace DLL {
 
 				size--;
 			}
-
-			return true;
 		}
 
-		bool Remove(T data, bool(*cmp)(T, T) = nullptr) {
-			Node* temp = Find(data, cmp);
+		bool Remove(T data, bool(*cmp_equal)(T, T) = nullptr) {
+			Node* temp = Find(data, cmp_equal);
+
 			if (temp) {
 				if (temp == head) {
-					PopFront();
+					try {
+						PopFront();
+					}
+					catch (const std::exception& ex) {
+						throw std::runtime_error("DLL::Remove() -> " + std::string(ex.what()));
+					}
 				}
 				else if (temp == tail) {
-					PopBack();
+					try {
+						PopBack();
+					}
+					catch (const std::exception& ex) {
+						throw std::runtime_error("DLL::Remove() -> " + std::string(ex.what()));
+					}
 				}
 				else {
 					Node* prev = temp->prev;
@@ -221,22 +257,27 @@ namespace DLL {
 			size = 0;
 		}
 
-		Node* Find(T data, bool(*cmp)(T, T) = nullptr) const {
+		Node* Find(T data, bool(*cmp_equal)(T, T) = nullptr) const {
 			Node* current = head;
 
 			while (current != nullptr) {
-				if (cmp) {
-					if (cmp(current->data, data)) {
-						return current;
+				try {
+					if (cmp_equal) {
+						if (cmp_equal(current->data, data)) {
+							return current;
+						}
+					}
+					else if constexpr (std::is_arithmetic_v<T>) {
+						if (current->data == data) {
+							return current;
+						}
+					}
+					else {
+						throw std::runtime_error("T was not arithmetic and no cmp was provided");
 					}
 				}
-				else if constexpr (std::is_arithmetic_v<T>) {
-					if (current->data == data) {
-						return current;
-					}
-				}
-				else {
-					return nullptr;
+				catch (const std::exception& ex) {
+					throw std::runtime_error("DLL::Find() -> " + std::string(ex.what()));
 				}
 
 				current = current->next;
@@ -245,67 +286,61 @@ namespace DLL {
 			return nullptr;
 		}
 
-		const T& operator[](size_t index) const {
-			if (index < 0 || index >= size) {
-				throw std::out_of_range("Index is out of range");
+		T& operator[](size_t index) {
+			if (index >= size) { throw std::out_of_range("DLL::Operator[]: index (" + std::to_string(index) + ") was greater or equal to list size (" + std::to_string(int(size)) + ")"); }
+			
+			Node* temp = nullptr;
+
+			if (index < size / 2) {
+				temp = head;
+				for (size_t i = 0; i < index; i++) {
+					temp = temp->next;
+				}
 			}
 			else {
-				Node* temp;
-
-				if (index < size / 2) {
-					temp = head;
-					for (size_t i = 0; i < index; i++) {
-						temp = temp->next;
-					}
+				temp = tail;
+				for (size_t i = size - 1; i > index; i--) {
+					temp = temp->prev;
 				}
-				else {
-					temp = tail;
-					for (size_t i = size - 1; i > index; i--) {
-						temp = temp->prev;
-					}
-				}
-
-				return temp->data;
 			}
+
+			return temp->data;
 		}
 
-		T& operator[](size_t index) {
-			if (index < 0 || index >= size) {
-				throw std::out_of_range("Index is out of range");
+		const T& operator[](size_t index) const {
+			if (index >= size) { throw std::out_of_range("DLL::Operator[]: index (" + std::to_string(index) + ") was greater or equal to list size (" + std::to_string(int(size)) + ")"); }
+
+			Node* temp = nullptr;
+
+			if (index < size / 2) {
+				temp = head;
+				for (size_t i = 0; i < index; i++) {
+					temp = temp->next;
+				}
 			}
 			else {
-				Node* temp;
-
-				if (index < size / 2) {
-					temp = head;
-					for (size_t i = 0; i < index; i++) {
-						temp = temp->next;
-					}
+				temp = tail;
+				for (size_t i = size - 1; i > index; i--) {
+					temp = temp->prev;
 				}
-				else {
-					temp = tail;
-					for (size_t i = size - 1; i > index; i--) {
-						temp = temp->prev;
-					}
-				}
-
-				return temp->data;
 			}
-		}	
 
-		std::string ToString(unsigned int limit = 0, std::string(*str)(T) = nullptr) const {
+			return temp->data;
+		}
+
+		std::string ToString(unsigned int limit = 0, std::string(*cmp_string)(T) = nullptr) const {
 			if (limit <= 0 || limit > size) {
 				limit = size;
 			}
 
 			std::string text = "Doubly Linked List:\n";
-			text += "Size: " + std::to_string(int(size)) + "\n";
+			text += "size: " + std::to_string(int(size)) + "\n";
 			text += "{\n";
 
 			Node* temp = head;
-			if (str) {
+			if (cmp_string) {
 				for (size_t i = 0; i < limit; i++) {
-					text += str(temp->data);
+					text += cmp_string(temp->data);
 					text += "\n";
 					temp = temp->next;
 				}
@@ -318,7 +353,7 @@ namespace DLL {
 				}
 			}
 			else {
-				text = "Data type is not supported and no method was provided\n";
+				text = "T is not arithmetic and no cmp was provided\n";
 			}
 
 			if (limit < size) {
