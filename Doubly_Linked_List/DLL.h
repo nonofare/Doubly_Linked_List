@@ -208,7 +208,13 @@ namespace DLL {
 		}
 
 		bool Remove(T data, bool(*cmp_equal)(T, T) = nullptr) {
-			Node* temp = Find(data, cmp_equal);
+			Node* temp = nullptr;
+			try {
+				temp = Find(data, cmp_equal);
+			}
+			catch (const std::exception& ex) {
+				throw std::runtime_error("DLL::Remove() -> " + std::string(ex.what()));
+			}
 
 			if (temp) {
 				if (temp == head) {
@@ -261,23 +267,18 @@ namespace DLL {
 			Node* current = head;
 
 			while (current != nullptr) {
-				try {
-					if (cmp_equal) {
-						if (cmp_equal(current->data, data)) {
-							return current;
-						}
-					}
-					else if constexpr (std::is_arithmetic_v<T>) {
-						if (current->data == data) {
-							return current;
-						}
-					}
-					else {
-						throw std::runtime_error("T was not arithmetic and no cmp was provided");
+				if (cmp_equal) {
+					if (cmp_equal(current->data, data)) {
+						return current;
 					}
 				}
-				catch (const std::exception& ex) {
-					throw std::runtime_error("DLL::Find() -> " + std::string(ex.what()));
+				else if constexpr (std::is_arithmetic_v<T>) {
+					if (current->data == data) {
+						return current;
+					}
+				}
+				else {
+					throw std::runtime_error("T was not arithmetic and no cmp was provided");
 				}
 
 				current = current->next;
