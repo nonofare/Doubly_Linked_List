@@ -46,6 +46,7 @@ utility functions for converting list to a string representation.
 #### Constructors:
 
 - `DoubLinList()`: Creates an empty list.
+- `DoubLinList(const DoubLinList &other)`: Copy constructor that creates a deep copy of another DoubLinList instance.
 
 #### Destructor:
 

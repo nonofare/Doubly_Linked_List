@@ -23,6 +23,14 @@ namespace DLL {
         DoubLinList() : head(nullptr), tail(nullptr), size(0) {
         }
 
+        DoubLinList(const DoubLinList &other) : head(nullptr), tail(nullptr), size(0) {
+            Node *current = other.head;
+            while (current != nullptr) {
+                push_back(current->data);
+                current = current->next;
+            }
+        }
+
         ~DoubLinList() {
             erase();
         }
@@ -68,7 +76,7 @@ namespace DLL {
         }
 
         bool pop_front() {
-            if (!size) { return false; }
+            if (!size) return false;
 
             if (size > 1) {
                 Node *temp = head->next;
@@ -86,7 +94,7 @@ namespace DLL {
         }
 
         bool pop_back() {
-            if (!size) { return false; }
+            if (!size) return false;
 
             if (size > 1) {
                 Node *temp = tail->prev;
@@ -105,13 +113,11 @@ namespace DLL {
 
         bool remove_specific(T key, bool (*cmp_equal)(T, T) = nullptr) {
             Node *found = find(key, cmp_equal);
-            if (!found) { return false; }
+            if (!found) return false;
 
-            if (found == head) {
-                pop_front();
-            } else if (found == tail) {
-                pop_back();
-            } else {
+            if (found == head) pop_front();
+            else if (found == tail) pop_back();
+            else {
                 Node *prev = found->prev;
                 Node *next = found->next;
                 prev->next = next;
@@ -127,15 +133,8 @@ namespace DLL {
             Node *current = head;
 
             while (current) {
-                if (cmp_equal) {
-                    if (cmp_equal(current->data, key)) {
-                        return current;
-                    }
-                } else if constexpr (std::is_arithmetic_v<T>) {
-                    if (current->data == key) {
-                        return current;
-                    }
-                }
+                if (cmp_equal && cmp_equal(current->data, key)) return current;
+                if (!cmp_equal && current->data == key) return current;
                 current = current->next;
             }
 
@@ -197,9 +196,7 @@ namespace DLL {
         }
 
         std::string to_str(unsigned int limit = 0, std::string (*fun_str)(T) = nullptr) const {
-            if (limit == 0 || limit > size) {
-                limit = size;
-            }
+            if (limit == 0 || limit > size) limit = size;
 
             std::string text = "Doubly Linked List:\n";
             text += "size: " + std::to_string(static_cast<int>(size)) + "\n";
@@ -222,9 +219,7 @@ namespace DLL {
                 text = "T was not arithmetic and no function was provided\n";
             }
 
-            if (limit < size) {
-                text += "[...]\n";
-            }
+            if (limit < size) text += "[...]\n";
             text += "}\n";
 
             return text;
