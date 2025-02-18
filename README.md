@@ -1,7 +1,7 @@
 # Doubly Linked List implementation in C++
 
 This project provides a C++ implementation of a Doubly Linked List data structure. The implementation is templated,
-allowing it to store any data type. List supports common operations such as insertion, deletion, searching, as well as
+allowing it to store any data type. List supports common operations such as insertion, deletion, searching as well as
 utility functions for converting list to a string representation.
 
 ## Table of Contents
